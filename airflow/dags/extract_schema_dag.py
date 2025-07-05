@@ -18,7 +18,7 @@ with DAG(
     tags=["schema", "ingestion"]
 ) as dag:
 
-    CSV_FILE = "/opt/airflow/data/first-4G-cell_Query_Result_20250527.csv"
+    CSV_FILE = "/opt/airflow/data/retail_data.csv"
 
     extract_schema = BashOperator(
         task_id="extract_schema",

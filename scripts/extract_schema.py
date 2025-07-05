@@ -40,12 +40,17 @@ def infer_dtype(series: pd.Series) -> str:
 
     return "string"
 
-def extract_schema(csv_path, output_dir="/opt/airflow/version", version="v1"):
+
+from datetime import datetime
+
+def extract_schema(csv_path, output_dir="/opt/airflow/version"):
     csv_path = Path(csv_path)
     df = pd.read_csv(csv_path, nrows=500, dtype=str)
 
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     schema = {
         "file_name": csv_path.name,
+        "timestamp": timestamp,
         "columns": {}
     }
 
@@ -55,7 +60,19 @@ def extract_schema(csv_path, output_dir="/opt/airflow/version", version="v1"):
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"DVM_{csv_path.stem}_{version}.json"
+
+    # Chercher la dernière version existante
+    existing = list(output_dir.glob(f"DVM_{csv_path.stem}_v*.json"))
+    max_version = 0
+    for f in existing:
+        try:
+            v = int(f.stem.split('_v')[-1])
+            if v > max_version:
+                max_version = v
+        except Exception:
+            pass
+    next_version = max_version + 1
+    output_path = output_dir / f"DVM_{csv_path.stem}_v{next_version}.json"
 
     with open(output_path, "w") as f:
         json.dump(schema, f, indent=4)
